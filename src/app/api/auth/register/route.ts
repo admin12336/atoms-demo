@@ -24,10 +24,9 @@ export async function POST(req: Request) {
       passwordHash: await hashPassword(body.password),
       createdAt: new Date().toISOString(),
     });
-    await setSessionCookie(user.id);
-    return NextResponse.json({
-      user: { id: user.id, email: user.email, displayName: user.displayName },
-    });
+    const publicUser = { id: user.id, email: user.email, displayName: user.displayName };
+    await setSessionCookie(publicUser);
+    return NextResponse.json({ user: publicUser });
   } catch (e) {
     const message = e instanceof Error ? e.message : "注册失败";
     return NextResponse.json({ error: message }, { status: 400 });

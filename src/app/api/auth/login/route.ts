@@ -15,10 +15,9 @@ export async function POST(req: Request) {
     if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
       return NextResponse.json({ error: "邮箱或密码错误" }, { status: 401 });
     }
-    await setSessionCookie(user.id);
-    return NextResponse.json({
-      user: { id: user.id, email: user.email, displayName: user.displayName },
-    });
+    const publicUser = { id: user.id, email: user.email, displayName: user.displayName };
+    await setSessionCookie(publicUser);
+    return NextResponse.json({ user: publicUser });
   } catch (e) {
     const message = e instanceof Error ? e.message : "登录失败";
     return NextResponse.json({ error: message }, { status: 400 });
