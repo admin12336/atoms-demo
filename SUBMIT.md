@@ -1,37 +1,33 @@
 # 提交清单（飞书第四节）
 
-按笔试文档填写：
+## 已完成
 
-1. **飞书文档副本公开链接**：把你的笔试文档设为「互联网获得链接可阅读」后粘贴  
-2. **Demo 公网 URL**：部署后的地址（Vercel / Railway）  
-3. **GitHub Public 仓库链接**：本仓库设为 Public  
-4. **（加分）** Cursor / Claude 订阅或使用截图  
+| 项 | 内容 |
+|----|------|
+| GitHub Public 仓库 | https://github.com/admin12336/atoms-demo |
+| 本地 Demo | http://localhost:3000 |
 
-## 推送 GitHub（本机暂无 gh 时可手动）
+## 还差你填的
 
-```bash
-cd atoms-demo
-git remote add origin https://github.com/<你的用户名>/atoms-demo.git
-git branch -M main
-git push -u origin main
-```
+1. **飞书文档副本公开链接**：笔试文档设为「互联网获得链接可阅读」  
+2. **Demo 公网 URL**：按下面部署后粘贴  
+3. **（加分）** Cursor 使用截图  
 
-然后在 GitHub → Settings → General → Danger Zone → **Change visibility → Public**。
+## 一键部署 Vercel（约 3 分钟）
 
-## 一键部署 Vercel
-
-1. 打开 https://vercel.com/new  
-2. Import 上述 GitHub 仓库  
-3. Environment Variables 填入：
+1. 打开（已带上仓库）：  
+   https://vercel.com/new/clone?repository-url=https://github.com/admin12336/atoms-demo  
+   或 https://vercel.com/new → Import `admin12336/atoms-demo`
+2. Environment Variables 填入：
 
 ```text
-OPENAI_API_KEY=...
+ALLOW_DEMO_MODE=true
+AUTH_SECRET=换成一串随机字符
+OPENAI_API_KEY=（可选，有 DeepSeek 密钥再填）
 OPENAI_BASE_URL=https://api.deepseek.com/v1
 OPENAI_MODEL=deepseek-chat
-AUTH_SECRET=换成随机长字符串
-ALLOW_DEMO_MODE=true
 ```
 
-4. Deploy → 复制生产域名填回飞书  
+3. Deploy → 复制 `https://xxx.vercel.app` 填回飞书  
 
-> 说明：Vercel 无持久磁盘，服务端 JSON 在冷启动/多实例下可能重置；评审当场注册体验即可。若要求强持久，改用 Railway 并挂载 volume。
+> Vercel 无持久磁盘，服务端 JSON 可能在冷启动后重置；评审当场注册体验即可。无密钥时演示模式也能走完全流程。

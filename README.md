@@ -8,8 +8,8 @@
 
 | 项 | 链接 |
 |----|------|
-| 可访问 Demo URL | _部署后填入_ |
-| GitHub 仓库 | _设为 Public 后填入_ |
+| 可访问 Demo URL | _Vercel 部署后填入（见下方）_ |
+| GitHub 仓库 | https://github.com/admin12336/atoms-demo （已 Public） |
 
 ## 5 分钟自测
 
