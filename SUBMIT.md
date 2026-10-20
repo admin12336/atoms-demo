@@ -1,33 +1,66 @@
-# 提交清单（飞书第四节）
+# 飞书第四节 · 直接粘贴稿
 
-## 已完成
+> 把下面内容填进你的笔试文档副本「第四节」。  
+> 文档本身请先设为：**分享 → 权限设置 → 外部访问 → 互联网获得链接可阅读**。
 
-| 项 | 内容 |
-|----|------|
-| GitHub Public 仓库 | https://github.com/admin12336/atoms-demo |
-| 本地 Demo | http://localhost:3000 |
+---
 
-## 还差你填的
-
-1. **飞书文档副本公开链接**：笔试文档设为「互联网获得链接可阅读」  
-2. **Demo 公网 URL**：按下面部署后粘贴  
-3. **（加分）** Cursor 使用截图  
-
-## 一键部署 Vercel（约 3 分钟）
-
-1. 打开（已带上仓库）：  
-   https://vercel.com/new/clone?repository-url=https://github.com/admin12336/atoms-demo  
-   或 https://vercel.com/new → Import `admin12336/atoms-demo`
-2. Environment Variables 填入：
+## 1）笔试文档公开链接
 
 ```text
-ALLOW_DEMO_MODE=true
-AUTH_SECRET=换成一串随机字符
-OPENAI_API_KEY=（可选，有 DeepSeek 密钥再填）
-OPENAI_BASE_URL=https://api.deepseek.com/v1
-OPENAI_MODEL=deepseek-chat
+（请粘贴你创建副本后、已开启「互联网获得链接可阅读」的飞书文档链接）
 ```
 
-3. Deploy → 复制 `https://xxx.vercel.app` 填回飞书  
+操作：打开你的笔试文档副本 → 右上角「分享」→「权限设置」→「外部访问」→ 勾选「互联网获得链接可阅读」。
 
-> Vercel 无持久磁盘，服务端 JSON 可能在冷启动后重置；评审当场注册体验即可。无密钥时演示模式也能走完全流程。
+---
+
+## 2）可运行 Demo 公网 URL
+
+```text
+https://great-news-share.loca.lt
+```
+
+备用（本机）：`http://localhost:3000`  
+更稳部署（推荐你补做）：https://vercel.com/new → Import `admin12336/atoms-demo` → Deploy 后替换上面链接。
+
+自测路径（约 5 分钟）：
+1. 打开链接 → 注册  
+2. 点模板「做一个本地保存的习惯打卡」  
+3. 批准并生成 → 右侧预览可点击  
+4. 对话「把主色换成绿色」迭代  
+5. 导出 HTML / 分享预览  
+
+---
+
+## 3）GitHub 仓库（已 Public）
+
+```text
+https://github.com/admin12336/atoms-demo
+```
+
+说明文档：
+- `README.md`：使用与部署  
+- `DELIVERY.md`：设计思路 / 完成度 / 与笔试要求对照  
+
+---
+
+## 4）（加分）AI 工具使用截图
+
+```text
+（可选）粘贴 Cursor 订阅页 / 对话记录 / 本仓库提交记录截图
+```
+
+---
+
+## 笔试要求对照（写进文档也可）
+
+| 文档要求 | 本项目如何满足 |
+|----------|----------------|
+| 可运行 Atoms-Demo，智能体驱动生成并可视化展示 | 自然语言 → Emma 方案 → 批准 → Alex 生成 HTML → 右侧沙箱预览 |
+| 真实交互（非纯命令行） | 注册登录工坊、方案卡片、iframe 内可点击应用 |
+| 数据持久化 | 用户/项目/版本写入服务端 `data/store.json`；生成应用内 localStorage |
+| 初始化 / 注册登录 / 核心逻辑 | 注册登录 → 建项目 → 规划 → 生成 → 迭代 |
+| 至少一个衍生能力 | Open-Meteo 天气 API；版本回滚 / 导出 / 分享 |
+| 公网可访问 + PoC | 隧道/可部署 Vercel；仓库 Public |
+| 鼓励 Cursor 等 AI 工具 | 本项目由 Cursor Agent 协作完成 |

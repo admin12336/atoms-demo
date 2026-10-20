@@ -1,60 +1,82 @@
-# 交付说明 · Atoms Demo
+# 交付说明 · Atoms Demo（对照飞书笔试文档）
 
-## 1. 实现思路与取舍
+> 对应文档：【请创建副本后使用】研发笔试——XXX  
+> 参考产品：[Atoms](https://atoms.dev/)  
+> 仓库：https://github.com/admin12336/atoms-demo
 
-笔试目标不是重造 Atoms 平台，而是证明：**能用 AI 工具把「场景」快速做成可运行、可体验的产品**。
+## 0. 题目理解
 
-本 Demo 抓住 Atoms 最核心的一条闭环：
+笔试要求完成一个可运行的 **Atoms-Demo**：用 AI 把「场景」做成可体验产品，而不是重造整个 Atoms 平台。
+
+本项目实现的核心闭环：
 
 ```text
-自然语言 → 方案确认 → 可交互应用 → 预览迭代
+注册登录 → 中文描述需求 → Emma 产品方案 → 你批准
+  → Alex 生成可交互网页 → 右侧预览 / 对话迭代 / 回滚导出分享
 ```
 
-关键取舍：
+鼓励使用 Cursor 等 AI 编程工具完成本题（本仓库即由 Cursor 协作交付）。
 
-1. **方案先行再生成**  
-   Emma 先出结构化方案，用户点「批准并生成」后才调用 Alex。避免一上来直接吐半成品代码。
+## 1. 笔试要求 → 实现对照
 
-2. **生成物限定为单文件 HTML**  
-   在 iframe 沙箱里即可点击、表单、localStorage，工程复杂度可控，3–4 小时内能打通闭环。
+| 文档要求 | 实现 |
+|----------|------|
+| 智能体驱动生成应用，并可视化网页展示 | Mike 状态协调 + Emma 规划 + Alex 生成；右侧 Canvas 预览 |
+| 真实交互（非纯命令行） | Web UI：登录、对话、批准按钮、iframe 内增删改查 |
+| 数据持久化（哪怕简单） | 服务端 JSON（用户/项目/消息/版本）；生成应用 localStorage |
+| 初始化 / 注册 / 登录 / 核心业务流 | 完整具备 |
+| 至少一个衍生能力 / 复杂模块 | Open-Meteo 第三方天气；版本回滚、导出 HTML、分享链接、多端预览 |
+| 提供公网可访问链接 | 见 `SUBMIT.md`；支持 Vercel 部署 |
+| 提交文档说明设计与过程 | 本文件 + `README.md` |
+| GitHub Public | https://github.com/admin12336/atoms-demo |
 
-3. **服务端持久化用户与项目**  
-   注册登录后项目/对话/版本写入 `data/store.json`，满足「不是纯前端 Mock」。生成应用自身数据仍用 localStorage，符合单页演示边界。
+## 2. 实现思路与取舍
 
-4. **第三方能力两条**  
-   - LLM：OpenAI 兼容接口（推荐 DeepSeek）  
-   - Open-Meteo：侧栏实时天气，并作为生成上下文提示（无需 Key）
+1. **方案先行**  
+   先出结构化方案再生成代码，贴近 Atoms「先对齐、再执行」的协作方式。
 
-5. **无 Key 可演示**  
-   `ALLOW_DEMO_MODE` 下用内置模板生成可交互页面，保证评审机器也能跑通主路径。
+2. **生成物 = 单文件 HTML**  
+   沙箱即可运行，3–4 小时内能打通「可点、可改、可交付」。
 
-## 2. 完成度
+3. **服务端持久化账号与项目**  
+   满足「不是纯前端 Mock」；生成应用内状态仍用 localStorage。
+
+4. **第三方能力**  
+   - OpenAI 兼容大模型（DeepSeek 等）做规划与生成  
+   - Open-Meteo 天气 API（无需 Key）写入侧栏与生成上下文  
+
+5. **演示模式**  
+   无 API Key 时仍可走完全流程，便于评审机器验收。
+
+## 3. 完成度
 
 ### 已完成
 
-- 注册 / 登录 / 退出（HttpOnly Cookie + bcrypt）  
-- 多项目列表与新建  
+- 注册 / 登录 / 退出  
+- 多项目、模板启动  
 - Emma 方案卡片 + 批准生成  
-- Alex 生成 / 对话迭代  
-- 右侧多端预览、版本切换回滚、导出 HTML、分享链接  
-- Open-Meteo 第三方天气  
-- README + 本交付文档  
+- Alex 生成与对话迭代  
+- 桌面/平板/手机预览、版本回滚、导出、分享  
+- Open-Meteo  
+- README / DELIVERY / SUBMIT  
 
-### 边界（未做）
+### 明确边界
 
-- 不生成多文件 React 工程或独立后端业务服务  
+- 不生成独立多文件 React 工程后端业务服务  
 - 不做支付、OAuth、自定义域名  
-- Vercel 无盘场景下 JSON 持久化有限（见 README）
+- Vercel 无持久盘时 JSON 可能随实例重置（当场注册即可体验）
 
-## 3. 如何评审
+## 4. 技术栈
 
-本地：`npm run dev` → 注册 → 模板「习惯打卡」→ 批准 → 预览点击 → 迭代一句 → 导出/分享。
+Next.js 15 · TypeScript · OpenAI SDK（兼容 DeepSeek）· bcrypt Cookie 会话 · 文件 JSON 存储 · Open-Meteo
 
-配置 `OPENAI_API_KEY` 后切换「LLM 实机」可看到真实模型方案与页面。
+## 5. 本地与部署
 
-## 4. 提交清单（对应飞书第四节）
+```bash
+cd atoms-demo
+cp .env.example .env.local
+npm install
+npm run dev
+```
 
-1. 本文档副本公开链接  
-2. Demo 公网 URL  
-3. GitHub Public 仓库链接  
-4. （可选）Cursor 等 AI 工具使用截图  
+部署与提交粘贴稿见 `SUBMIT.md`。
