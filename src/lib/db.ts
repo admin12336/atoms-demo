@@ -2,7 +2,10 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { Project, User } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+/** Vercel / serverless 根目录只读，可写目录用 /tmp */
+const DATA_DIR = process.env.VERCEL
+  ? path.join("/tmp", "atoms-demo-data")
+  : path.join(process.cwd(), "data");
 
 type Store = {
   users: User[];
@@ -10,32 +13,53 @@ type Store = {
   shares: Record<string, { projectId: string; versionId: string; html: string; title: string; createdAt: string }>;
 };
 
-const memory: Store = { users: [], projects: [], shares: {} };
-let loaded = false;
+type GlobalStore = typeof globalThis & {
+  __atomsStore?: Store;
+  __atomsStoreLoaded?: boolean;
+};
+
+const g = globalThis as GlobalStore;
+
+function emptyStore(): Store {
+  return { users: [], projects: [], shares: {} };
+}
+
+function memory(): Store {
+  if (!g.__atomsStore) g.__atomsStore = emptyStore();
+  return g.__atomsStore;
+}
 
 async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
 }
 
 async function load(): Promise<Store> {
-  if (loaded) return memory;
-  await ensureDir();
+  const store = memory();
+  if (g.__atomsStoreLoaded) return store;
+
   try {
+    await ensureDir();
     const raw = await fs.readFile(path.join(DATA_DIR, "store.json"), "utf8");
     const parsed = JSON.parse(raw) as Store;
-    memory.users = parsed.users ?? [];
-    memory.projects = parsed.projects ?? [];
-    memory.shares = parsed.shares ?? {};
+    store.users = parsed.users ?? [];
+    store.projects = parsed.projects ?? [];
+    store.shares = parsed.shares ?? {};
   } catch {
-    // first run
+    // first run or cold start without prior file
   }
-  loaded = true;
-  return memory;
+
+  g.__atomsStoreLoaded = true;
+  return store;
 }
 
 async function save(store: Store) {
-  await ensureDir();
-  await fs.writeFile(path.join(DATA_DIR, "store.json"), JSON.stringify(store, null, 2), "utf8");
+  g.__atomsStore = store;
+  try {
+    await ensureDir();
+    await fs.writeFile(path.join(DATA_DIR, "store.json"), JSON.stringify(store, null, 2), "utf8");
+  } catch {
+    // 内存仍可用；无盘环境不阻断主流程
+  }
 }
 
 export async function getStore() {
