@@ -1,0 +1,90 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
+import styles from "../auth.module.css";
+
+export default function RegisterPage() {
+  const router = useRouter();
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ displayName, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "注册失败");
+      router.push("/studio");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "注册失败");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className={styles.wrap}>
+      <div className={styles.card}>
+        <div className={styles.brand}>
+          Atoms <span>Demo</span>
+        </div>
+        <h1>创建账号</h1>
+        <p>注册后项目与对话会写入服务端存储，刷新不丢。</p>
+        <form className={styles.form} onSubmit={onSubmit}>
+          <label className={styles.field}>
+            显示名
+            <input
+              className={styles.fieldInput}
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+              maxLength={40}
+              placeholder="例如：晓亮"
+            />
+          </label>
+          <label className={styles.field}>
+            邮箱
+            <input
+              className={styles.fieldInput}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="you@example.com"
+            />
+          </label>
+          <label className={styles.field}>
+            密码
+            <input
+              className={styles.fieldInput}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              placeholder="至少 6 位"
+            />
+          </label>
+          {error ? <p className={styles.error}>{error}</p> : null}
+          <button className={styles.submit} type="submit" disabled={loading}>
+            {loading ? "创建中…" : "注册并进入"}
+          </button>
+        </form>
+        <p className={styles.foot}>
+          已有账号？ <Link href="/login">去登录</Link>
+        </p>
+      </div>
+    </div>
+  );
+}

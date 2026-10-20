@@ -1,0 +1,344 @@
+.shell {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 56px 1fr;
+  overflow: hidden;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-elev) 88%, transparent);
+}
+
+.brand {
+  font-family: var(--font-display), "Segoe UI", sans-serif;
+  font-weight: 800;
+}
+
+.brand span {
+  color: var(--accent);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+
+.pillLive {
+  border-color: color-mix(in srgb, var(--ok) 50%, var(--line));
+  color: var(--ok);
+}
+
+.pillDemo {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  color: var(--accent);
+}
+
+.ghostBtn {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 7px 12px;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 240px 1fr 1.05fr;
+  min-height: 0;
+}
+
+.side,
+.chat,
+.preview {
+  min-height: 0;
+  overflow: auto;
+}
+
+.side {
+  border-right: 1px solid var(--line);
+  padding: 14px;
+  background: color-mix(in srgb, var(--bg-elev) 70%, transparent);
+}
+
+.sideHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sideHead h2 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.weather {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.weather strong {
+  color: var(--text);
+}
+
+.newBtn {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.projectList {
+  display: grid;
+  gap: 8px;
+}
+
+.projectItem {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.projectItemActive {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.projectItem strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.projectItem span {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.chat {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  border-right: 1px solid var(--line);
+}
+
+.messages {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty {
+  color: var(--muted);
+  line-height: 1.6;
+  padding: 20px 8px;
+}
+
+.bubble {
+  max-width: 92%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.bubbleUser {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel));
+}
+
+.bubbleError {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
+  color: #ffc5be;
+}
+
+.planCard {
+  border: 1px solid color-mix(in srgb, var(--ok) 40%, var(--line));
+  background: color-mix(in srgb, var(--ok) 8%, var(--panel));
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.planCard h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.planCard p {
+  margin: 0 0 10px;
+  color: var(--muted);
+}
+
+.planCard ul {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.approveBtn {
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 14px;
+  background: var(--ok);
+  color: #04140c;
+  font-weight: 700;
+}
+
+.composer {
+  border-top: 1px solid var(--line);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.templates button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.row textarea {
+  resize: none;
+  min-height: 72px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #0c1210;
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.row button {
+  border: 0;
+  border-radius: 12px;
+  padding: 0 16px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.row button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.preview {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: #0a0f0d;
+}
+
+.previewBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.previewBar select,
+.previewBar button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+
+.frameWrap {
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  min-height: 0;
+}
+
+.frameShell {
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: white;
+  transition: width 0.25s ease;
+}
+
+.frameShellTablet {
+  width: 768px;
+  max-width: 100%;
+}
+
+.frameShellMobile {
+  width: 390px;
+  max-width: 100%;
+}
+
+.frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: white;
+}
+
+.previewEmpty {
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+  padding: 40px 20px;
+}
+
+@media (max-width: 1100px) {
+  .body {
+    grid-template-columns: 200px 1fr;
+  }
+
+  .preview {
+    display: none;
+  }
+}

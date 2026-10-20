@@ -1,95 +1,86 @@
-import Image from "next/image";
+import Link from "next/link";
 import styles from "./page.module.css";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <div className={styles.shell}>
+      <nav className={styles.nav}>
+        <div className={styles.brand}>
+          Atoms <span>Demo</span>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className={styles.navActions}>
+          <Link className={styles.btnGhost} href="/login">
+            登录
+          </Link>
+          <Link className={styles.btn} href="/register">
+            开始构建
+          </Link>
+        </div>
+      </nav>
+
+      <section className={styles.hero}>
+        <div>
+          <p className={styles.kicker}>ROOT 笔试 · 对标 atoms.dev 工作流</p>
+          <h1>一句话，生成可点的网页</h1>
+          <p className={styles.lead}>
+            用自然语言描述想法。Emma 产出产品方案，你批准后 Alex 生成可交互单页应用，右侧即时预览，支持对话迭代、版本回滚与分享。
+          </p>
+          <div className={styles.ctaRow}>
+            <Link className={styles.btn} href="/register">
+              注册并进入工坊
+            </Link>
+            <Link className={styles.btnGhost} href="/login">
+              已有账号
+            </Link>
+          </div>
+        </div>
+
+        <aside className={styles.panel}>
+          <h2>主流程</h2>
+          <p>Mike 协调状态机 · Emma 规划 · Alex 工程生成</p>
+          <ol className={styles.flow}>
+            <li>
+              <span className={styles.idx}>1</span>
+              <div>
+                <strong>描述需求</strong>
+                <span>例如：做一个带 localStorage 的习惯打卡</span>
+              </div>
+            </li>
+            <li>
+              <span className={styles.idx}>2</span>
+              <div>
+                <strong>批准方案</strong>
+                <span>确认页面、功能、视觉与验收点</span>
+              </div>
+            </li>
+            <li>
+              <span className={styles.idx}>3</span>
+              <div>
+                <strong>预览迭代</strong>
+                <span>沙箱 iframe 内真实点击，继续对话改版</span>
+              </div>
+            </li>
+          </ol>
+        </aside>
+      </section>
+
+      <section className={styles.section}>
+        <h3>笔试要求对照</h3>
+        <div className={styles.grid}>
+          <article className={styles.card}>
+            <h4>真实交互 UI</h4>
+            <p>生成物是完整 HTML 应用，在沙箱中可增删、筛选、切换主题。</p>
+          </article>
+          <article className={styles.card}>
+            <h4>数据持久化</h4>
+            <p>用户与项目写入服务端 JSON 存储；生成应用内数据用 localStorage。</p>
+          </article>
+          <article className={styles.card}>
+            <h4>第三方能力</h4>
+            <p>接入 OpenAI 兼容大模型（DeepSeek）与 Open-Meteo 天气 API。</p>
+          </article>
+        </div>
+      </section>
     </div>
   );
 }
