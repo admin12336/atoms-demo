@@ -18,16 +18,16 @@
 ## 2）可运行 Demo 公网 URL
 
 ```text
-https://great-news-share.loca.lt
+https://atoms-demo-drab.vercel.app
 ```
 
 备用（本机）：`http://localhost:3000`  
-更稳部署（推荐你补做）：https://vercel.com/new → Import `admin12336/atoms-demo` → Deploy 后替换上面链接。
+（已部署到 Vercel，链接固定，不用再改隧道）
 
 自测路径（约 5 分钟）：
-1. 打开链接 → 注册  
-2. 点模板「做一个本地保存的习惯打卡」  
-3. 批准并生成 → 右侧预览可点击  
+1. 打开链接 → 首页输入想法或点官方案例模板  
+2. 注册进入工坊 → Emma 方案 → 批准并生成  
+3. 右侧预览可点击（记账 / 番茄钟 / 贪吃蛇 / 咖啡店等）  
 4. 对话「把主色换成绿色」迭代  
 5. 导出 HTML / 分享预览  
 

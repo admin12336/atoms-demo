@@ -1,0 +1,72 @@
+﻿[
+    {
+        "Name":  "PAGE /",
+        "OK":  true,
+        "Detail":  "status=200 len=30131"
+    },
+    {
+        "Name":  "PAGE /lab",
+        "OK":  true,
+        "Detail":  "status=200 len=32145"
+    },
+    {
+        "Name":  "PAGE /login",
+        "OK":  true,
+        "Detail":  "status=200 len=29718"
+    },
+    {
+        "Name":  "PAGE /register",
+        "OK":  true,
+        "Detail":  "status=200 len=29902"
+    },
+    {
+        "Name":  "PAGE /studio",
+        "OK":  true,
+        "Detail":  "status=200 len=30920"
+    },
+    {
+        "Name":  "API lab/sse",
+        "OK":  true,
+        "Detail":  "status=True msg=True done=True bytes=484"
+    },
+    {
+        "Name":  "API lab/rag hit",
+        "OK":  true,
+        "Detail":  "hits=1 cited=æ\u0085éç  E42 è¯´æ"
+    },
+    {
+        "Name":  "API lab/rag empty",
+        "OK":  false,
+        "Detail":  "hits=0 ansPrefix=èµæä¸è¶³ï¼å½åè¿·ä½ ç¥è¯åºæªå"
+    },
+    {
+        "Name":  "API lab/rag GET",
+        "OK":  true,
+        "Detail":  "corpusSize=6"
+    },
+    {
+        "Name":  "API lab/planner ok",
+        "OK":  true,
+        "Detail":  "researchOk=True phases=2"
+    },
+    {
+        "Name":  "API lab/planner soft-timeout",
+        "OK":  true,
+        "Detail":  "reason=soft_timeout phase0=skipped"
+    },
+    {
+        "Name":  "API weather",
+        "OK":  true,
+        "Detail":  "keys=weather"
+    },
+    {
+        "Name":  "API auth/me",
+        "OK":  true,
+        "Detail":  "body={\"user\":null,\"llmMode\":\"demo\"}"
+    },
+    {
+        "Name":  "LAB UI modules",
+        "OK":  true,
+        "Detail":  "len=32145"
+    }
+]

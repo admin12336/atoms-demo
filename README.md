@@ -9,7 +9,7 @@
 | 项 | 链接 |
 |----|------|
 | 可访问 Demo | https://atoms-demo-drab.vercel.app/ |
-| 能力实验室 Lab | https://atoms-demo-drab.vercel.app/lab |
+| 能力实验室 Lab | https://atoms-demo-drab.vercel.app/lab （短链 `/grkj`） |
 | GitHub 仓库 | https://github.com/admin12336/atoms-demo |
 
 ## 能力实验室（简历配套）
@@ -18,9 +18,11 @@
 
 | 模块 | 展示能力 | 接口 |
 |------|----------|------|
-| SSE 流式 | status/message/error/done、fetch 手解析、Abort 取消 | `GET /api/lab/sse` |
-| 迷你 RAG | BM25 风格召回、引用、空结果禁编造 | `POST /api/lab/rag` |
-| 两阶段 Agent | Research→Planner + 软超时跳过检索 | `POST /api/lab/planner` |
+| SSE 流式 | POST+JSON Body、Abort、有 Key 真流 | `POST /api/lab/sse` |
+| 迷你 RAG | BM25、空结果禁编造、requestId | `POST /api/lab/rag` |
+| 两阶段 Agent | Mock≠软超时；ContractGuard 跳点 | `POST /api/lab/planner` |
+| 填表 Agent | 槽位 + lookupCompany mock | `POST /api/lab/form-agent` |
+| 工坊 Agent | build/iterate SSE + Abort + 限流 | `POST /api/projects/[id]/agent` |
 
 对应简历：TripPal 流式治理 / 私域 RAG 口径 / 两阶段编排与降级。
 

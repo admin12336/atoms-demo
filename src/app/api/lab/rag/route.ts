@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { answerFromHits, searchDocs } from "@/lib/lab/bm25";
 import { LAB_DOCS } from "@/lib/lab/docs";
+import { clientKey, rateLimit } from "@/lib/rateLimit";
+import { newRequestId } from "@/lib/requestId";
 
 const schema = z.object({
   query: z.string().min(1).max(200),
@@ -10,35 +12,52 @@ const schema = z.object({
 
 /** 迷你 RAG：BM25 风格召回 + 空结果禁编造 + 引用标题 */
 export async function POST(req: NextRequest) {
+  const requestId = newRequestId();
+  const rl = rateLimit(`lab-rag:${clientKey(req)}`, 40);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "限流", requestId, retryAfterSec: rl.retryAfterSec },
+      { status: 429, headers: { "X-Request-Id": requestId, "Retry-After": String(rl.retryAfterSec) } },
+    );
+  }
   try {
     const body = schema.parse(await req.json());
     const hits = searchDocs(body.query, body.topK ?? 3);
     const { answer, cited } = answerFromHits(body.query, hits);
-    return NextResponse.json({
-      query: body.query,
-      hits: hits.map((h) => ({
-        id: h.id,
-        title: h.title,
-        role: h.role,
-        score: Number(h.score.toFixed(3)),
-        snippet: h.snippet,
-      })),
-      answer,
-      cited,
-      corpusSize: LAB_DOCS.length,
-      note: "本地语料演示；生产可换 pgvector + Rerank，保持空结果不编造。",
-    });
+    return NextResponse.json(
+      {
+        query: body.query,
+        hits: hits.map((h) => ({
+          id: h.id,
+          title: h.title,
+          role: h.role,
+          score: Number(h.score.toFixed(3)),
+          snippet: h.snippet,
+        })),
+        answer,
+        cited,
+        corpusSize: LAB_DOCS.length,
+        requestId,
+        note: "本地语料演示；生产可换 pgvector + Rerank，保持空结果不编造。",
+      },
+      { headers: { "X-Request-Id": requestId } },
+    );
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "bad request" },
-      { status: 400 },
+      { error: e instanceof Error ? e.message : "bad request", requestId },
+      { status: 400, headers: { "X-Request-Id": requestId } },
     );
   }
 }
 
 export async function GET() {
-  return NextResponse.json({
-    corpusSize: LAB_DOCS.length,
-    docs: LAB_DOCS.map((d) => ({ id: d.id, title: d.title, role: d.role })),
-  });
+  const requestId = newRequestId();
+  return NextResponse.json(
+    {
+      corpusSize: LAB_DOCS.length,
+      docs: LAB_DOCS.map((d) => ({ id: d.id, title: d.title, role: d.role })),
+      requestId,
+    },
+    { headers: { "X-Request-Id": requestId } },
+  );
 }

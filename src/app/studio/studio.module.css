@@ -162,6 +162,25 @@
   padding: 20px 8px;
 }
 
+.emptyHero {
+  padding: 36px 16px;
+  text-align: center;
+}
+
+.emptyHero h2 {
+  margin: 0 0 10px;
+  font-family: var(--font-display), "Segoe UI", sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+}
+
+.emptyHero p {
+  margin: 0 auto;
+  max-width: 36ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .bubble {
   max-width: 92%;
   padding: 12px 14px;

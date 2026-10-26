@@ -15,8 +15,8 @@ const body = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Atoms Demo · 从一句需求到可交互网页",
-  description: "ROOT / 深度赋智笔试 Demo：自然语言 → Emma 方案 → Alex 生成 → 预览迭代",
+  title: "Atoms Demo · 把想法变成可运行的应用",
+  description: "用一句话描述需求，AI 生成完整可运行网页。对话迭代，版本存档，随时回滚与导出。",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

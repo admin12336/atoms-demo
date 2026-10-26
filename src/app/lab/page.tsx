@@ -12,6 +12,8 @@ type RagHit = {
   snippet: string;
 };
 
+type ResearchMode = "mock_whitelist" | "live_research";
+
 export default function LabPage() {
   // SSE
   const [sseTopic, setSseTopic] = useState("杭州两日游");
@@ -30,8 +32,16 @@ export default function LabPage() {
   const [goal, setGoal] = useState("上海三日亲子游");
   const [delayMs, setDelayMs] = useState(800);
   const [softMs, setSoftMs] = useState(3000);
+  const [researchMode, setResearchMode] = useState<ResearchMode>("live_research");
+  const [injectJump, setInjectJump] = useState(false);
   const [planOut, setPlanOut] = useState("");
   const [planBusy, setPlanBusy] = useState(false);
+
+  // Form agent
+  const [formMsg, setFormMsg] = useState("查询公司 grkj");
+  const [formOut, setFormOut] = useState("");
+  const [formBusy, setFormBusy] = useState(false);
+  const [formSlots, setFormSlots] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch("/api/lab/rag")
@@ -53,11 +63,16 @@ export default function LabPage() {
     const ac = new AbortController();
     abortRef.current = ac;
     try {
-      const res = await fetch(`/api/lab/sse?topic=${encodeURIComponent(sseTopic)}`, {
+      // POST + JSON Body：演示非 EventSource 可带鉴权/Body
+      const res = await fetch("/api/lab/sse", {
+        method: "POST",
         signal: ac.signal,
-        headers: { Accept: "text/event-stream" },
+        headers: { Accept: "text/event-stream", "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: sseTopic }),
       });
       if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+      const rid = res.headers.get("X-Request-Id");
+      if (rid) setSseLog((p) => p + `[header] X-Request-Id=${rid}\n`);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
@@ -86,7 +101,7 @@ export default function LabPage() {
                   : event === "error"
                     ? `[error] ${String(json.message || "")}`
                     : event === "done"
-                      ? `\n[done] cancelled=${String(json.cancelled)} ok=${String(json.ok ?? true)}`
+                      ? `\n[done] cancelled=${String(json.cancelled)} ok=${String(json.ok ?? true)} mode=${String(json.llmMode ?? "")}`
                       : `[${event}] ${data}`;
             setSseLog((prev) => prev + line + (line.endsWith("\n") ? "" : "\n"));
           } catch {
@@ -117,7 +132,7 @@ export default function LabPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "请求失败");
       setRagHits(data.hits || []);
-      setRagAnswer(data.answer || "");
+      setRagAnswer(`${data.answer || ""}\n\nrequestId=${data.requestId || res.headers.get("X-Request-Id")}`);
     } catch (e) {
       setRagAnswer(`错误：${(e as Error).message}`);
     } finally {
@@ -136,6 +151,8 @@ export default function LabPage() {
           goal,
           researchDelayMs: delayMs,
           softTimeoutMs: softMs,
+          researchMode,
+          injectGeoJump: injectJump,
         }),
       });
       const data = await res.json();
@@ -145,6 +162,26 @@ export default function LabPage() {
       setPlanOut(`错误：${(e as Error).message}`);
     } finally {
       setPlanBusy(false);
+    }
+  }
+
+  async function runFormAgent() {
+    setFormBusy(true);
+    setFormOut("");
+    try {
+      const res = await fetch("/api/lab/form-agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: formMsg, slots: formSlots }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "请求失败");
+      setFormSlots(data.slots || {});
+      setFormOut(JSON.stringify(data, null, 2));
+    } catch (e) {
+      setFormOut(`错误：${(e as Error).message}`);
+    } finally {
+      setFormBusy(false);
     }
   }
 
@@ -171,27 +208,26 @@ export default function LabPage() {
         <section className={styles.hero}>
           <h1>能力实验室 · 简历可演示能力</h1>
           <p className={styles.lead}>
-            对应杨晓亮简历中的全栈 / AI 工程化能力：SSE 流式与 Abort 取消、迷你 RAG（空结果禁编造）、
-            Research→Planner 两阶段 + 软超时。以下接口无模型 Key 也可完整体验；工坊主流程仍可走真实 LLM（有 Key）或演示模式。
+            SSE（POST+Body）与 Abort、迷你 RAG、Research→Planner（Mock 与软超时分离）、输出契约校验、槽位+工具填表。
+            短链 <code>/grkj</code> → 本页。无 Key 可完整体验；有 Key 时 SSE 可真流。
           </p>
           <div className={styles.tags}>
-            <span className={styles.tag}>Frontend · SSE 手解析</span>
-            <span className={styles.tag}>Backend · Route Handler</span>
-            <span className={styles.tag}>AI · 两阶段 Agent</span>
-            <span className={styles.tag}>RAG · BM25 风格召回</span>
-            <span className={styles.tag}>工程 · 软超时 / 降级</span>
+            <span className={styles.tag}>SSE · POST Body</span>
+            <span className={styles.tag}>requestId / 限流</span>
+            <span className={styles.tag}>两阶段 + 契约</span>
+            <span className={styles.tag}>RAG · 空结果禁编造</span>
+            <span className={styles.tag}>槽位工具 Agent</span>
           </div>
         </section>
 
         <div className={styles.grid}>
-          {/* SSE */}
           <section className={styles.card}>
             <h2>
-              1. SSE 流式输出
+              1. SSE 流式（POST）
               <span className={styles.badge}>前端 + 后端</span>
             </h2>
             <p className={styles.meta}>
-              事件协议 status / message / error / done；fetch 流式读取；可一键 Abort 模拟关页取消（对应 TripPal 断连治理）。
+              fetch + ReadableStream；JSON Body（非 EventSource）；Abort 取消；响应头 X-Request-Id。有 Key 真流 / 无 Key 假流。
             </p>
             <input
               className={styles.field}
@@ -201,7 +237,7 @@ export default function LabPage() {
             />
             <div className={styles.actions}>
               <button className={styles.primary} type="button" disabled={sseBusy} onClick={runSse}>
-                {sseBusy ? "推送中…" : "开始流式"}
+                {sseBusy ? "推送中…" : "POST 开始流式"}
               </button>
               <button className={styles.danger} type="button" disabled={!sseBusy} onClick={stopSse}>
                 Abort 取消
@@ -210,14 +246,13 @@ export default function LabPage() {
             <pre className={styles.out}>{sseLog || "点击开始后，这里会实时追加事件…"}</pre>
           </section>
 
-          {/* RAG */}
           <section className={styles.card}>
             <h2>
               2. 迷你知识库 RAG
               <span className={styles.badge}>AI · 检索</span>
             </h2>
             <p className={styles.meta}>
-              本地语料 {corpus.length} 篇；BM25 风格打分 + 引用标题；无命中返回「资料不足」，不编造结论。
+              本地语料 {corpus.length} 篇；BM25 风格打分 + 引用；无命中「资料不足」，不编造。
             </p>
             <textarea
               className={styles.fieldArea}
@@ -228,20 +263,10 @@ export default function LabPage() {
               <button className={styles.primary} type="button" disabled={ragBusy} onClick={runRag}>
                 {ragBusy ? "检索中…" : "检索并回答"}
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setRagQuery("SSE 为什么要 Abort");
-                }}
-              >
+              <button type="button" onClick={() => setRagQuery("SSE 为什么要 Abort")}>
                 试：SSE Abort
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setRagQuery("火星发动机说明书");
-                }}
-              >
+              <button type="button" onClick={() => setRagQuery("火星发动机说明书")}>
                 试：空结果
               </button>
             </div>
@@ -254,14 +279,13 @@ export default function LabPage() {
             ))}
           </section>
 
-          {/* Planner */}
           <section className={`${styles.card} ${styles.wide}`}>
             <h2>
-              3. Research→Planner 两阶段 + 软超时
+              3. Research→Planner · Mock / 软超时分离
               <span className={styles.badge}>AI · Agent</span>
             </h2>
             <p className={styles.meta}>
-              调节「检索耗时」与「软超时」：当检索超过软超时，跳过 Research 仍继续 Planner（对应 TripPal Tavily ≈3s 软超时口径）。
+              <b>mock_whitelist</b>：预制摘要，不跑超时竞态；<b>live_research</b>：模拟检索 + 软超时跳过（生产降级）。二者隔离。可注入跳点脏数据走 ContractGuard。
             </p>
             <div className={styles.row}>
               <input
@@ -270,6 +294,23 @@ export default function LabPage() {
                 onChange={(e) => setGoal(e.target.value)}
                 placeholder="规划目标"
               />
+            </div>
+            <div className={styles.row}>
+              <label className={styles.sliderLabel}>
+                检索模式
+                <select
+                  className={styles.field}
+                  value={researchMode}
+                  onChange={(e) => setResearchMode(e.target.value as ResearchMode)}
+                >
+                  <option value="live_research">live_research（软超时降级）</option>
+                  <option value="mock_whitelist">mock_whitelist（白名单演示）</option>
+                </select>
+              </label>
+              <label className={styles.sliderLabel}>
+                <input type="checkbox" checked={injectJump} onChange={(e) => setInjectJump(e.target.checked)} />{" "}
+                注入跨城跳点脏数据
+              </label>
             </div>
             <div className={styles.row}>
               <label className={styles.sliderLabel}>
@@ -282,6 +323,7 @@ export default function LabPage() {
                   step={100}
                   value={delayMs}
                   onChange={(e) => setDelayMs(Number(e.target.value))}
+                  disabled={researchMode === "mock_whitelist"}
                 />
               </label>
               <label className={styles.sliderLabel}>
@@ -294,6 +336,7 @@ export default function LabPage() {
                   step={100}
                   value={softMs}
                   onChange={(e) => setSoftMs(Number(e.target.value))}
+                  disabled={researchMode === "mock_whitelist"}
                 />
               </label>
             </div>
@@ -304,30 +347,62 @@ export default function LabPage() {
               <button
                 type="button"
                 onClick={() => {
+                  setResearchMode("live_research");
                   setDelayMs(4000);
                   setSoftMs(1000);
+                  setInjectJump(false);
                 }}
               >
-                预设：触发软超时
+                预设：软超时
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setDelayMs(600);
-                  setSoftMs(3000);
+                  setResearchMode("mock_whitelist");
+                  setInjectJump(true);
                 }}
               >
-                预设：检索成功
+                预设：Mock + 跳点校验
               </button>
             </div>
-            <pre className={styles.out}>{planOut || "运行后展示 Research / Planner JSON…"}</pre>
+            <pre className={styles.out}>{planOut || "运行后展示 Research / Planner / Contract JSON…"}</pre>
+          </section>
+
+          <section className={`${styles.card} ${styles.wide}`}>
+            <h2>
+              4. 槽位 + 工具填表 Agent
+              <span className={styles.badge}>AI · 业务 Agent</span>
+            </h2>
+            <p className={styles.meta}>
+              受约束槽位机；工具 lookupCompany（本地 mock，试「查询公司 grkj」）。参与口径演示，非完整 LangGraph。
+            </p>
+            <input
+              className={styles.field}
+              value={formMsg}
+              onChange={(e) => setFormMsg(e.target.value)}
+              placeholder="用户话术"
+            />
+            <div className={styles.actions}>
+              <button className={styles.primary} type="button" disabled={formBusy} onClick={runFormAgent}>
+                {formBusy ? "执行中…" : "跑一轮"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormMsg("查询公司 grkj");
+                  setFormSlots({});
+                }}
+              >
+                重置试 grkj
+              </button>
+            </div>
+            <pre className={styles.out}>{formOut || "槽位 / 工具 trace 将显示在这里…"}</pre>
           </section>
         </div>
 
         <p className={styles.footer}>
-          主产品入口仍是首页「一句话生成网页」工坊（多智能体 Emma/Mike/Alex、版本、分享、无 Key 演示模式）。
-          本页 Lab 用于面试现场快速演示工程能力，不依赖外部模型 Key。
-          源码：<code>/lab</code>、<code>/api/lab/*</code>
+          工坊 build/iterate 已改为 SSE + Abort；Lab 与工坊 AI 路由均带 requestId 与限流。
+          源码：<code>/lab</code>、<code>/api/lab/*</code>、<code>/api/projects/[id]/agent</code>
         </p>
       </main>
     </div>

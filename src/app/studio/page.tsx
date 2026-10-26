@@ -2,15 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Project, PublicUser } from "@/lib/types";
+import { IDEA_TEMPLATES, PENDING_IDEA_KEY } from "@/lib/templates";
 import styles from "./studio.module.css";
-
-const TEMPLATES = [
-  "做一个本地保存的习惯打卡",
-  "做一个番茄钟，支持统计今日完成次数",
-  "做一个旅行清单，可勾选打包物品",
-];
 
 type Device = "desktop" | "tablet" | "mobile";
 
@@ -22,9 +17,11 @@ export default function StudioPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [streamHint, setStreamHint] = useState("");
   const [error, setError] = useState("");
   const [device, setDevice] = useState<Device>("desktop");
   const [weatherText, setWeatherText] = useState("天气加载中…");
+  const abortRef = useRef<AbortController | null>(null);
 
   const active = useMemo(
     () => projects.find((p) => p.id === activeId) ?? null,
@@ -74,6 +71,14 @@ export default function StudioPage() {
       .catch(() => setWeatherText("天气暂不可用"));
   }, [refreshMe, refreshProjects]);
 
+  useEffect(() => {
+    const pending = sessionStorage.getItem(PENDING_IDEA_KEY);
+    if (!pending || !user || busy) return;
+    sessionStorage.removeItem(PENDING_IDEA_KEY);
+    createProject(pending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only auto-start once after login
+  }, [user]);
+
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/");
@@ -102,23 +107,89 @@ export default function StudioPage() {
     }
   }
 
+  function abortAgent() {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setBusy(false);
+    setStreamHint("已 Abort 取消生成");
+  }
+
   async function runAgent(projectId: string, action: "plan" | "build" | "iterate", content?: string) {
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
     setBusy(true);
     setError("");
+    setStreamHint(action === "plan" ? "Emma 规划中…" : "Alex SSE 流式生成中…（可 Abort）");
     try {
       const res = await fetch(`/api/projects/${projectId}/agent`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, content }),
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+        body: JSON.stringify({ action, content, stream: action !== "plan" }),
+        signal: ac.signal,
       });
+
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("text/event-stream") && res.body) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        let lastProject: Project | null = null;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const parts = buf.split("\n\n");
+          buf = parts.pop() || "";
+          for (const block of parts) {
+            const lines = block.split("\n");
+            let event = "message";
+            let data = "";
+            for (const line of lines) {
+              if (line.startsWith("event:")) event = line.slice(6).trim();
+              if (line.startsWith("data:")) data += line.slice(5).trim();
+            }
+            if (!data) continue;
+            try {
+              const json = JSON.parse(data) as Record<string, unknown>;
+              if (event === "status") {
+                setStreamHint(String(json.text || ""));
+              } else if (event === "message") {
+                const t = String(json.text || "");
+                if (t) setStreamHint((prev) => (prev.length > 120 ? prev.slice(-80) : prev) + (t.length > 40 ? "…" : t.slice(0, 8)));
+              } else if (event === "error") {
+                setError(String(json.message || "流式错误"));
+              } else if (event === "done" && json.project) {
+                lastProject = json.project as Project;
+              }
+            } catch {
+              /* ignore partial */
+            }
+          }
+        }
+        if (lastProject) {
+          setProjects((prev) => prev.map((p) => (p.id === lastProject!.id ? lastProject! : p)));
+        } else {
+          await refreshProjects();
+        }
+        return;
+      }
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "执行失败");
       setProjects((prev) => prev.map((p) => (p.id === data.project.id ? data.project : p)));
     } catch (err) {
+      if ((err as Error).name === "AbortError") {
+        setStreamHint("已 Abort 取消");
+        await refreshProjects();
+        return;
+      }
       setError(err instanceof Error ? err.message : "执行失败");
       await refreshProjects();
     } finally {
       setBusy(false);
+      abortRef.current = null;
+      setStreamHint("");
     }
   }
 
@@ -235,10 +306,9 @@ export default function StudioPage() {
         <section className={styles.chat}>
           <div className={styles.messages}>
             {!active ? (
-              <div className={styles.empty}>
-                选择或新建项目，然后用中文描述你想做的网页应用。
-                <br />
-                Emma 会先给方案，你批准后 Alex 生成可交互页面。
+              <div className={styles.emptyHero}>
+                <h2>把想法变成可运行的应用</h2>
+                <p>用一句话描述需求。Emma 先出方案，你批准后 Alex 生成可交互页面，右侧即时预览。</p>
               </div>
             ) : (
               active.messages.map((m) => {
@@ -277,13 +347,25 @@ export default function StudioPage() {
                 );
               })
             )}
+            {streamHint ? <div className={styles.bubble}>{streamHint}</div> : null}
             {error ? <div className={`${styles.bubble} ${styles.bubbleError}`}>{error}</div> : null}
           </div>
 
           <form className={styles.composer} onSubmit={onSend}>
             <div className={styles.templates}>
-              {TEMPLATES.map((t) => (
-                <button key={t} type="button" disabled={busy} onClick={() => setInput(t)}>
+              {IDEA_TEMPLATES.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    if (!active) {
+                      createProject(t);
+                    } else {
+                      setInput(t);
+                    }
+                  }}
+                >
                   {t}
                 </button>
               ))}
@@ -295,12 +377,17 @@ export default function StudioPage() {
                 placeholder={
                   active?.status === "ready"
                     ? "描述要修改的地方，例如：把主色换成绿色"
-                    : "描述你想做的应用…"
+                    : "输入你的想法，例如：咖啡店落地页，含菜单和预约表单"
                 }
               />
               <button type="submit" disabled={busy || !input.trim()}>
                 {busy ? "…" : "发送"}
               </button>
+              {busy ? (
+                <button type="button" className={styles.ghostBtn} onClick={abortAgent}>
+                  Abort
+                </button>
+              ) : null}
             </div>
           </form>
         </section>
