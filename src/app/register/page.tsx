@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import PasswordField from "../components/PasswordField";
 import styles from "../auth.module.css";
 
 export default function RegisterPage() {
@@ -40,7 +41,11 @@ export default function RegisterPage() {
           Atoms <span>Demo</span>
         </div>
         <h1>创建账号</h1>
-        <p>注册后项目与对话会写入服务端存储，刷新不丢。</p>
+        <p>注册成功会自动登录并进入工坊。</p>
+        <p className={styles.tip}>
+          登录态会写入浏览器 Cookie（约 14 天）：下次同一浏览器打开站点，一般直接进工坊，不必重新注册。
+          换电脑/清 Cookie 后，优先「去登录」；只有账号确实不存在时才需再注册。
+        </p>
         <form className={styles.form} onSubmit={onSubmit}>
           <label className={styles.field}>
             显示名
@@ -51,6 +56,7 @@ export default function RegisterPage() {
               required
               maxLength={40}
               placeholder="例如：晓亮"
+              autoComplete="nickname"
             />
           </label>
           <label className={styles.field}>
@@ -62,20 +68,14 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="you@example.com"
+              autoComplete="email"
             />
           </label>
-          <label className={styles.field}>
-            密码
-            <input
-              className={styles.fieldInput}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              placeholder="至少 6 位"
-            />
-          </label>
+          <PasswordField
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+          />
           {error ? <p className={styles.error}>{error}</p> : null}
           <button className={styles.submit} type="submit" disabled={loading}>
             {loading ? "创建中…" : "注册并进入"}
