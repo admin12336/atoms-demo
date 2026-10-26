@@ -33,9 +33,13 @@ function lookupCompany(name: string) {
 }
 
 function extractCompany(message: string): string | undefined {
-  const m = message.match(/(?:公司|企业|查询)\s*[「":：]?\s*([\u4e00-\u9fa5A-Za-z0-9]{2,20})/);
+  const lower = message.toLowerCase();
+  if (lower.includes("grkj")) return "grkj";
+  // 「查询公司 XXX」/「公司：XXX」
+  const m =
+    message.match(/查询\s*公司\s*[「"':：]?\s*([\u4e00-\u9fa5A-Za-z0-9]{2,20})/) ||
+    message.match(/(?:公司|企业)\s*[「"':：]\s*([\u4e00-\u9fa5A-Za-z0-9]{2,20})/);
   if (m) return m[1];
-  if (message.toLowerCase().includes("grkj")) return "grkj";
   return undefined;
 }
 
