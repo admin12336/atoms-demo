@@ -4,22 +4,36 @@
 
 面向 ROOT / 深度赋智研发笔试的可运行 Demo，对标 [Atoms](https://atoms.dev/) 的核心工作流：**用 AI 把场景快速做成可体验产品**，而不是重造整个 Atoms 平台。
 
-## 在线地址（提交时填写）
+## 在线地址
 
 | 项 | 链接 |
 |----|------|
-| 可访问 Demo URL | _Vercel 部署后填入（见下方）_ |
-| GitHub 仓库 | https://github.com/admin12336/atoms-demo （已 Public） |
+| 可访问 Demo | https://atoms-demo-drab.vercel.app/ |
+| 能力实验室 Lab | https://atoms-demo-drab.vercel.app/lab |
+| GitHub 仓库 | https://github.com/admin12336/atoms-demo |
+
+## 能力实验室（简历配套）
+
+路径：`/lab`（无模型 Key 可完整体验）
+
+| 模块 | 展示能力 | 接口 |
+|------|----------|------|
+| SSE 流式 | status/message/error/done、fetch 手解析、Abort 取消 | `GET /api/lab/sse` |
+| 迷你 RAG | BM25 风格召回、引用、空结果禁编造 | `POST /api/lab/rag` |
+| 两阶段 Agent | Research→Planner + 软超时跳过检索 | `POST /api/lab/planner` |
+
+对应简历：TripPal 流式治理 / 私域 RAG 口径 / 两阶段编排与降级。
 
 ## 5 分钟自测
 
-1. 打开站点 → **注册** → 进入工坊  
-2. 点模板「习惯打卡」或输入任意中文需求  
-3. 查看 Emma 方案 → **批准并生成**  
-4. 右侧预览可点击交互；切换手机/平板尺寸  
-5. 对话「把主色换成绿色」触发迭代；版本下拉可回滚  
-6. **导出 HTML** / **分享预览**；刷新后项目仍在  
-7. 侧栏可见 **Open-Meteo** 实时天气（第三方 API）
+1. 打开站点 → 可先点导航 **能力实验室** 演示 SSE / RAG / 软超时  
+2. **注册** → 进入工坊  
+3. 点模板「习惯打卡」或输入任意中文需求  
+4. 查看 Emma 方案 → **批准并生成**  
+5. 右侧预览可点击交互；切换手机/平板尺寸  
+6. 对话「把主色换成绿色」触发迭代；版本下拉可回滚  
+7. **导出 HTML** / **分享预览**；刷新后项目仍在  
+8. 侧栏可见 **Open-Meteo** 实时天气（第三方 API）
 
 ## 笔试要求对照
 
