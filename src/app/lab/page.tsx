@@ -43,6 +43,15 @@ export default function LabPage() {
   const [formBusy, setFormBusy] = useState(false);
   const [formSlots, setFormSlots] = useState<Record<string, string>>({});
 
+  // Java 契约
+  const [javaOut, setJavaOut] = useState("");
+  const [javaBusy, setJavaBusy] = useState(false);
+
+  // 业务机器人
+  const [botMsg, setBotMsg] = useState("故障码 E42 怎么处理");
+  const [botOut, setBotOut] = useState("");
+  const [botBusy, setBotBusy] = useState(false);
+
   useEffect(() => {
     fetch("/api/lab/rag")
       .then((r) => r.json())
@@ -185,6 +194,44 @@ export default function LabPage() {
     }
   }
 
+  async function runJava(action: "echo" | "park_metrics" | "health") {
+    setJavaBusy(true);
+    setJavaOut("");
+    try {
+      const res = await fetch("/api/lab/java", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, keyword: "spring-boot" }),
+      });
+      const data = await res.json();
+      if (!res.ok && res.status !== 429) throw new Error(data.message || data.error || "请求失败");
+      setJavaOut(JSON.stringify(data, null, 2));
+    } catch (e) {
+      setJavaOut(`错误：${(e as Error).message}`);
+    } finally {
+      setJavaBusy(false);
+    }
+  }
+
+  async function runBot() {
+    setBotBusy(true);
+    setBotOut("");
+    try {
+      const res = await fetch("/api/lab/bot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: botMsg }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "请求失败");
+      setBotOut(JSON.stringify(data, null, 2));
+    } catch (e) {
+      setBotOut(`错误：${(e as Error).message}`);
+    } finally {
+      setBotBusy(false);
+    }
+  }
+
   return (
     <div className={styles.shell}>
       <nav className={styles.nav}>
@@ -206,17 +253,17 @@ export default function LabPage() {
 
       <main className={styles.main}>
         <section className={styles.hero}>
-          <h1>能力实验室 · 简历可演示能力</h1>
+          <h1>能力实验室 · 简历项目一页演示</h1>
           <p className={styles.lead}>
-            SSE（POST+Body）与 Abort、迷你 RAG、Research→Planner（Mock 与软超时分离）、输出契约校验、槽位+工具填表。
-            短链 <code>/grkj</code> → 本页。无 Key 可完整体验；有 Key 时 SSE 可真流。
+            对齐简历：Java 接口契约、前后端联调、业务机器人、AI（SSE / RAG / 两阶段 / 填表）、驾驶舱指标、审批问答。
+            打开 <code>/grkj</code> 即可体验，无需 Key。
           </p>
           <div className={styles.tags}>
-            <span className={styles.tag}>SSE · POST Body</span>
-            <span className={styles.tag}>requestId / 限流</span>
-            <span className={styles.tag}>两阶段 + 契约</span>
-            <span className={styles.tag}>RAG · 空结果禁编造</span>
-            <span className={styles.tag}>槽位工具 Agent</span>
+            <span className={styles.tag}>Java 契约</span>
+            <span className={styles.tag}>前端 · React</span>
+            <span className={styles.tag}>后端 · API</span>
+            <span className={styles.tag}>业务机器人</span>
+            <span className={styles.tag}>AI · SSE/RAG/Agent</span>
           </div>
         </section>
 
@@ -398,11 +445,61 @@ export default function LabPage() {
             </div>
             <pre className={styles.out}>{formOut || "槽位 / 工具 trace 将显示在这里…"}</pre>
           </section>
+
+          <section className={styles.card}>
+            <h2>
+              5. Java 风格后端契约
+              <span className={styles.badge}>Java · 后端</span>
+            </h2>
+            <p className={styles.meta}>
+              统一返回 code / message / data / requestId（Spring Boot Result 风格）；含健康检查与驾驶舱指标接口。
+            </p>
+            <div className={styles.actions}>
+              <button className={styles.primary} type="button" disabled={javaBusy} onClick={() => runJava("echo")}>
+                {javaBusy ? "请求中…" : "Echo 契约"}
+              </button>
+              <button type="button" disabled={javaBusy} onClick={() => runJava("park_metrics")}>
+                驾驶舱指标
+              </button>
+              <button type="button" disabled={javaBusy} onClick={() => runJava("health")}>
+                Health
+              </button>
+            </div>
+            <pre className={styles.out}>{javaOut || "点击按钮查看 Java 风格 JSON…"}</pre>
+          </section>
+
+          <section className={styles.card}>
+            <h2>
+              6. 业务机器人
+              <span className={styles.badge}>机器人 · AI</span>
+            </h2>
+            <p className={styles.meta}>
+              一路由多工具：行程规划 / 知识库 / 填表 / 审批。对应 TripPal、RAG、表单 Agent、档案审批等简历项目。
+            </p>
+            <input
+              className={styles.field}
+              value={botMsg}
+              onChange={(e) => setBotMsg(e.target.value)}
+              placeholder="对机器人说一句话"
+            />
+            <div className={styles.actions}>
+              <button className={styles.primary} type="button" disabled={botBusy} onClick={runBot}>
+                {botBusy ? "思考中…" : "发送"}
+              </button>
+              <button type="button" onClick={() => setBotMsg("上海三日游")}>
+                行程
+              </button>
+              <button type="button" onClick={() => setBotMsg("档案审批进度")}>
+                审批
+              </button>
+            </div>
+            <pre className={styles.out}>{botOut || "机器人回复将显示在这里…"}</pre>
+          </section>
         </div>
 
         <p className={styles.footer}>
-          工坊 build/iterate 已改为 SSE + Abort；Lab 与工坊 AI 路由均带 requestId 与限流。
-          源码：<code>/lab</code>、<code>/api/lab/*</code>、<code>/api/projects/[id]/agent</code>
+          简历项目映射：TripPal→Planner/SSE；知识库+H5→RAG；表单 Agent→填表；驾驶舱→Java 指标；审批后台→机器人审批。
+          工坊入口仍可生成网页。源码：<code>/lab</code>、<code>/api/lab/*</code>
         </p>
       </main>
     </div>

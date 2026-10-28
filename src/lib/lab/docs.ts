@@ -2,7 +2,7 @@
 export type LabDoc = {
   id: string;
   title: string;
-  role: "维保" | "故障码" | "安全" | "工程";
+  role: "维保" | "故障码" | "安全" | "工程" | "行程" | "审批";
   text: string;
 };
 
@@ -42,5 +42,23 @@ export const LAB_DOCS: LabDoc[] = [
     title: "两阶段 Agent 编排说明",
     role: "工程",
     text: "Research→Planner 两阶段：Research 收集约束与外部摘要，Planner 产出结构化方案。开放域检索建议设置约 3 秒软超时，超时则跳过检索继续规划，避免外部依赖卡死主链路。自由无限循环不适用于政务填表，应使用受约束状态机与最大迭代次数。",
+  },
+  {
+    id: "doc-trip-01",
+    title: "TripPal 行程规划能力边界",
+    role: "行程",
+    text: "TripPal 对外以可嵌入 SDK 交付：宿主传入城市/天数等业务参数即可获取 SSE 流式结构化行程。不做无限自由 Agent 循环；地理跳点通过规则清洗与输出契约降低风险；幻觉只能降低概率。SDK 暂未发布 npm。",
+  },
+  {
+    id: "doc-archive-01",
+    title: "园区扶持档案审批流程",
+    role: "审批",
+    text: "企业扶持材料申报支持多级审批、退回重提与版本留存。账号按行级 + 角色 RBAC 隔离数据。状态变更使用事务保证一致性；支持批量导出归档，满足政企追溯要求。",
+  },
+  {
+    id: "doc-java-01",
+    title: "Java Spring Boot 接口约定",
+    role: "工程",
+    text: "业务接口统一返回 code/message/data/requestId。鉴权使用 JWT；热点指标可 Redis 缓存；大屏统计走预聚合避免扫明细。前后端按契约联调，异常码与日志可定位。",
   },
 ];
