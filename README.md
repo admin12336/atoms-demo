@@ -8,13 +8,13 @@
 
 | 项 | 链接 |
 |----|------|
-| 可访问 Demo | https://atoms-demo-drab.vercel.app/ |
-| 能力实验室 Lab | https://atoms-demo-drab.vercel.app/lab （短链 `/grkj`） |
+| 可访问 Demo | https://atoms-demo-drab.vercel.app/grkj （一点即开 Lab） |
+| 工坊首页 | https://atoms-demo-drab.vercel.app/ |
 | GitHub 仓库 | https://github.com/admin12336/atoms-demo |
 
 ## 能力实验室（简历配套）
 
-路径：`/lab`（无模型 Key 可完整体验）
+路径：`/grkj` → `/lab`（无模型 Key 可完整体验）
 
 | 模块 | 展示能力 | 接口 |
 |------|----------|------|
@@ -22,9 +22,11 @@
 | 迷你 RAG | BM25、空结果禁编造、requestId | `POST /api/lab/rag` |
 | 两阶段 Agent | Mock≠软超时；ContractGuard 跳点 | `POST /api/lab/planner` |
 | 填表 Agent | 槽位 + lookupCompany mock | `POST /api/lab/form-agent` |
+| Java 契约 | Spring Result 风格 code/message/data/requestId；驾驶舱指标 | `POST /api/lab/java` |
+| 业务机器人 | 行程 / RAG / 填表 / 审批 意图路由 | `POST /api/lab/bot` |
 | 工坊 Agent | build/iterate SSE + Abort + 限流 | `POST /api/projects/[id]/agent` |
 
-对应简历：TripPal 流式治理 / 私域 RAG 口径 / 两阶段编排与降级。
+对应简历：TripPal、私域知识库、表单 Agent、园区驾驶舱、档案审批；覆盖 Java / 前端 / 后端 / 机器人 / AI。
 
 ## 5 分钟自测
 
