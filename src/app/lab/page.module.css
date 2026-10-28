@@ -9,13 +9,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 24px;
+  padding: 14px 24px;
   border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 10;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
 }
 
 .brand {
@@ -55,30 +55,41 @@
 }
 
 .main {
-  width: min(1100px, 100%);
+  width: min(1120px, 100%);
   margin: 0 auto;
-  padding: 36px 20px 80px;
+  padding: 28px 20px 72px;
 }
 
 .hero h1 {
   font-family: var(--font-display), "Segoe UI", sans-serif;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-size: clamp(1.7rem, 3.6vw, 2.35rem);
   letter-spacing: -0.03em;
   margin: 0 0 10px;
 }
 
 .lead {
   color: var(--muted);
-  margin: 0 0 22px;
-  max-width: 62ch;
+  margin: 0 0 16px;
+  max-width: 68ch;
   line-height: 1.65;
+}
+
+.note {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed color-mix(in srgb, var(--line) 90%, var(--accent));
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 }
 
 .tag {
@@ -88,6 +99,69 @@
   border: 1px solid var(--line);
   color: var(--muted);
   background: color-mix(in srgb, var(--panel) 80%, transparent);
+}
+
+.map {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+@media (min-width: 760px) {
+  .map {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.mapCard {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.mapCard:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  transform: translateY(-1px);
+}
+
+.mapCard strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.mapCard span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.toc a {
+  text-decoration: none;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 0.8rem;
+  background: color-mix(in srgb, var(--panel) 75%, transparent);
+}
+
+.toc a:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
 }
 
 .grid {
@@ -110,11 +184,21 @@
   border-radius: var(--radius);
   padding: 16px 16px 14px;
   box-shadow: var(--shadow);
+  scroll-margin-top: 76px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
 .card h2 {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 1.05rem;
+  line-height: 1.35;
 }
 
 .card .meta {
@@ -122,6 +206,19 @@
   font-size: 0.86rem;
   margin: 0 0 12px;
   line-height: 1.5;
+}
+
+.resumeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .row {
@@ -187,6 +284,11 @@
   background: color-mix(in srgb, var(--danger) 25%, var(--bg-elev));
 }
 
+.actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .out {
   margin-top: 12px;
   padding: 12px;
@@ -221,6 +323,149 @@
   background: color-mix(in srgb, var(--ok) 20%, transparent);
   color: var(--ok);
   margin-left: 6px;
+  white-space: nowrap;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--muted) 70%, transparent);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.statusDot.on {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.metric {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--bg-elev);
+}
+
+.metric .label {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.metric .value {
+  font-size: 1.25rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+}
+
+.metric .trend {
+  color: var(--ok);
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.slot {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: var(--bg-elev);
+  font-size: 0.82rem;
+  min-width: 120px;
+}
+
+.slot em {
+  display: block;
+  color: var(--muted);
+  font-style: normal;
+  font-size: 0.74rem;
+  margin-bottom: 2px;
+}
+
+.chat {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  overflow: auto;
+  padding: 4px 2px;
+}
+
+.bubble {
+  max-width: 92%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  line-height: 1.55;
+  font-size: 0.9rem;
+  border: 1px solid var(--line);
+}
+
+.bubbleUser {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-elev));
+}
+
+.bubbleBot {
+  align-self: flex-start;
+  background: var(--bg);
+}
+
+.bubbleMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chip {
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.chipAccent {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+
+.steps {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.summaryItem {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--bg-elev);
 }
 
 .footer {
@@ -228,4 +473,10 @@
   color: var(--muted);
   font-size: 0.85rem;
   line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
 }

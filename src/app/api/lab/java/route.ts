@@ -31,6 +31,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const started = Date.now();
   const requestId = newRequestId();
   const rl = rateLimit(`lab-java:${clientKey(req)}`, 40);
   if (!rl.ok) {
@@ -48,30 +49,37 @@ export async function POST(req: NextRequest) {
         {
           code: 0,
           message: "UP",
-          data: { status: "UP", javaStyle: true, checks: { db: "UP", redis: "UP(mock)", llm: "DEGRADED_OK" } },
+          data: {
+            status: "UP",
+            javaStyle: true,
+            checks: { db: "UP", redis: "UP(mock)", llm: "DEGRADED_OK" },
+            note: "演示 Spring Boot 健康检查口径；本 Lab 宿主为 Next.js，契约形态对齐 Java 后端。",
+          },
           requestId,
+          latencyMs: Date.now() - started,
         },
         { headers: { "X-Request-Id": requestId } },
       );
     }
 
     if (body.action === "park_metrics") {
-      // 对齐简历「产业园区可视化驾驶舱」
       return NextResponse.json(
         {
           code: 0,
           message: "ok",
           data: {
             project: "产业园区可视化驾驶舱",
+            resumeProject: "产业园区可视化驾驶舱",
             metrics: [
-              { name: "入驻企业", value: 1286, unit: "家" },
-              { name: "本月产值", value: 3.42, unit: "亿元" },
-              { name: "今日访客", value: 932, unit: "人" },
+              { name: "入驻企业", value: 1286, unit: "家", trend: "+12" },
+              { name: "本月产值", value: 3.42, unit: "亿元", trend: "+0.18" },
+              { name: "今日访客", value: 932, unit: "人", trend: "+46" },
             ],
             cache: "Redis mock hit",
             sqlHint: "预聚合 + 索引，避免大屏直扫明细表",
           },
           requestId,
+          latencyMs: Date.now() - started,
         },
         { headers: { "X-Request-Id": requestId } },
       );
@@ -83,17 +91,26 @@ export async function POST(req: NextRequest) {
         message: "ok",
         data: {
           echo: body.keyword || "hello-java",
+          contract: "Result<T> = { code, message, data, requestId }",
           stack: ["Java", "Spring Boot", "MyBatis", "MySQL", "Redis"],
           frontend: ["TypeScript", "React", "Next.js"],
           ai: ["SSE", "RAG", "Agent", "Research→Planner"],
+          note: "统一返回体便于前后端联调与网关观测；面试可对标 Spring Boot Controller 出参约定。",
         },
         requestId,
+        latencyMs: Date.now() - started,
       },
       { headers: { "X-Request-Id": requestId } },
     );
   } catch (e) {
     return NextResponse.json(
-      { code: 400, message: e instanceof Error ? e.message : "bad request", data: null, requestId },
+      {
+        code: 400,
+        message: e instanceof Error ? e.message : "bad request",
+        data: null,
+        requestId,
+        latencyMs: Date.now() - started,
+      },
       { status: 400, headers: { "X-Request-Id": requestId } },
     );
   }
