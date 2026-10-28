@@ -475,8 +475,78 @@
   line-height: 1.6;
 }
 
+.smokeBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+}
+
+.smokeBar p {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.checkList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.checkItem {
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--bg-elev);
+}
+
+.checkItem.on {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 40%, var(--line));
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
+}
+
+.jsonWrap {
+  margin-top: 10px;
+}
+
+.jsonToggle {
+  border-radius: 999px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  background: var(--bg-elev);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 @media (max-width: 640px) {
   .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .out {
+    max-height: 180px;
+    font-size: 0.8rem;
+  }
+
+  .chat {
+    max-height: 260px;
+  }
+
+  .map {
     grid-template-columns: 1fr;
   }
 }

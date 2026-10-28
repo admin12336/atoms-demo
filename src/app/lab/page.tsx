@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LAB_DOCS } from "@/lib/lab/docs";
+import { JsonPanel } from "./JsonPanel";
 import styles from "./page.module.css";
 
 type RagHit = {
@@ -87,6 +88,8 @@ export default function LabPage() {
     "档案审批进度",
   ]);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const [smokeBusy, setSmokeBusy] = useState(false);
+  const [smokeMsg, setSmokeMsg] = useState("建议面试先点「一键跑通」，再按模块深潜讲解。");
 
   useEffect(() => {
     fetch("/api/lab/rag")
@@ -187,14 +190,33 @@ export default function LabPage() {
       setRagHits(data.hits || []);
       setRagAnswer(`${data.answer || ""}\n\nrequestId=${data.requestId || res.headers.get("X-Request-Id")}`);
       setRagDone(true);
+      return true;
     } catch (e) {
       setRagAnswer(`错误：${(e as Error).message}`);
+      return false;
     } finally {
       setRagBusy(false);
     }
   }
 
-  async function runPlanner() {
+  async function runPlanner(overrides?: {
+    goal?: string;
+    researchDelayMs?: number;
+    softTimeoutMs?: number;
+    researchMode?: ResearchMode;
+    injectGeoJump?: boolean;
+  }) {
+    const nextGoal = overrides?.goal ?? goal;
+    const nextDelay = overrides?.researchDelayMs ?? delayMs;
+    const nextSoft = overrides?.softTimeoutMs ?? softMs;
+    const nextMode = overrides?.researchMode ?? researchMode;
+    const nextJump = overrides?.injectGeoJump ?? injectJump;
+    if (overrides?.goal) setGoal(overrides.goal);
+    if (overrides?.researchDelayMs != null) setDelayMs(overrides.researchDelayMs);
+    if (overrides?.softTimeoutMs != null) setSoftMs(overrides.softTimeoutMs);
+    if (overrides?.researchMode) setResearchMode(overrides.researchMode);
+    if (overrides?.injectGeoJump != null) setInjectJump(overrides.injectGeoJump);
+
     setPlanBusy(true);
     setPlanOut("");
     setPlanSummary([]);
@@ -203,11 +225,11 @@ export default function LabPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          goal,
-          researchDelayMs: delayMs,
-          softTimeoutMs: softMs,
-          researchMode,
-          injectGeoJump: injectJump,
+          goal: nextGoal,
+          researchDelayMs: nextDelay,
+          softTimeoutMs: nextSoft,
+          researchMode: nextMode,
+          injectGeoJump: nextJump,
         }),
       });
       const data = await res.json();
@@ -216,37 +238,43 @@ export default function LabPage() {
       const research = data.research || {};
       const plan = data.plan || {};
       const summary = [
-        `mode=${data.researchMode || researchMode}`,
+        `mode=${data.researchMode || nextMode}`,
         research.ok === false ? "软超时跳过检索" : "检索完成",
-        injectJump ? "已注入跳点脏数据" : "未注入跳点",
+        nextJump ? "已注入跳点脏数据" : "未注入跳点",
         plan.contractGuard ? "已走契约清洗" : "结构化行程已产出",
         data.requestId ? `rid=${String(data.requestId).slice(0, 8)}` : "",
       ].filter(Boolean);
       setPlanSummary(summary);
       setPlanDone(true);
+      return true;
     } catch (e) {
       setPlanOut(`错误：${(e as Error).message}`);
+      return false;
     } finally {
       setPlanBusy(false);
     }
   }
 
-  async function runFormAgent() {
+  async function runFormAgent(message?: string) {
+    const msg = message ?? formMsg;
+    if (message) setFormMsg(message);
     setFormBusy(true);
     setFormOut("");
     try {
       const res = await fetch("/api/lab/form-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: formMsg, slots: formSlots }),
+        body: JSON.stringify({ message: msg, slots: message ? {} : formSlots }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "请求失败");
       setFormSlots(data.slots || {});
       setFormOut(JSON.stringify(data, null, 2));
       setFormDone(true);
+      return true;
     } catch (e) {
       setFormOut(`错误：${(e as Error).message}`);
+      return false;
     } finally {
       setFormBusy(false);
     }
@@ -271,8 +299,10 @@ export default function LabPage() {
         setJavaMetrics(data.data.metrics);
       }
       setJavaDone(true);
+      return true;
     } catch (e) {
       setJavaOut(`错误：${(e as Error).message}`);
+      return false;
     } finally {
       setJavaBusy(false);
     }
@@ -280,7 +310,7 @@ export default function LabPage() {
 
   async function runBot(message?: string) {
     const msg = (message ?? botMsg).trim();
-    if (!msg) return;
+    if (!msg) return false;
     if (message) setBotMsg(message);
     setBotBusy(true);
     setBotChat((prev) => [...prev, { role: "user", text: msg }]);
@@ -309,10 +339,52 @@ export default function LabPage() {
       }
       if (data.slots) setFormSlots((s) => ({ ...s, ...data.slots }));
       setBotDone(true);
+      return true;
     } catch (e) {
       setBotChat((prev) => [...prev, { role: "bot", text: `错误：${(e as Error).message}` }]);
+      return false;
     } finally {
       setBotBusy(false);
+    }
+  }
+
+  async function runSmokeDemo() {
+    if (smokeBusy) return;
+    setSmokeBusy(true);
+    setBotChat([]);
+    try {
+      setSmokeMsg("1/6 机器人四意图…");
+      for (const msg of ["上海三日游", "故障码 E42", "查询公司 grkj", "档案审批进度"]) {
+        await runBot(msg);
+      }
+      setSmokeMsg("2/6 Java 驾驶舱 + Health…");
+      document.getElementById("java")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      await runJava("park_metrics");
+      await runJava("health");
+      setSmokeMsg("3/6 RAG 空结果兜底…");
+      document.getElementById("rag")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      await runRag("火星发动机说明书");
+      setSmokeMsg("4/6 Planner 软超时降级…");
+      document.getElementById("planner")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      await runPlanner({
+        goal: "上海三日亲子游",
+        researchMode: "live_research",
+        researchDelayMs: 4000,
+        softTimeoutMs: 1000,
+        injectGeoJump: false,
+      });
+      setSmokeMsg("5/6 填表 Agent grkj…");
+      document.getElementById("form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      await runFormAgent("查询公司 grkj");
+      setSmokeMsg("6/6 SSE 短流演示…");
+      document.getElementById("sse")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      await runSse();
+      setSmokeMsg("一键跑通完成。可回顶部按模块讲解；原始 JSON 默认折叠，点「展开」查看。");
+      document.getElementById("bot")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (e) {
+      setSmokeMsg(`一键跑通中断：${(e as Error).message}`);
+    } finally {
+      setSmokeBusy(false);
     }
   }
 
@@ -354,6 +426,27 @@ export default function LabPage() {
             <span className={styles.tag}>AI · SSE/RAG/Agent</span>
           </div>
         </section>
+
+        <div className={styles.smokeBar}>
+          <button className={styles.btn} type="button" disabled={smokeBusy} onClick={runSmokeDemo}>
+            {smokeBusy ? "跑通中…" : "一键跑通"}
+          </button>
+          <p>{smokeMsg}</p>
+        </div>
+        <div className={styles.checkList} aria-label="模块完成状态">
+          {[
+            ["机器人", botDone],
+            ["Java", javaDone],
+            ["SSE", sseDone],
+            ["RAG", ragDone],
+            ["Planner", planDone],
+            ["填表", formDone],
+          ].map(([label, on]) => (
+            <span key={String(label)} className={`${styles.checkItem} ${on ? styles.on : ""}`}>
+              {on ? "✓" : "○"} {label}
+            </span>
+          ))}
+        </div>
 
         <div className={styles.map}>
           {MAP.map((item) => (
@@ -488,7 +581,7 @@ export default function LabPage() {
                 ))}
               </div>
             )}
-            <pre className={styles.out}>{javaOut || "点击按钮查看 Java 风格 JSON…"}</pre>
+            <JsonPanel text={javaOut} empty="点击按钮查看 Java 风格 JSON…" />
           </section>
 
           <section id="sse" className={styles.card}>
@@ -548,7 +641,7 @@ export default function LabPage() {
                 试：空结果
               </button>
             </div>
-            <pre className={styles.out}>{ragAnswer || "检索结果与可溯源回答将显示在这里…"}</pre>
+            <JsonPanel text={ragAnswer} empty="检索结果与可溯源回答将显示在这里…" defaultOpen />
             {ragHits.map((h) => (
               <div key={h.id} className={styles.hit}>
                 <strong>{h.score.toFixed(2)}</strong> · {h.title}（{h.role}）
@@ -624,7 +717,7 @@ export default function LabPage() {
               </label>
             </div>
             <div className={styles.actions}>
-              <button className={styles.primary} type="button" disabled={planBusy} onClick={runPlanner}>
+              <button className={styles.primary} type="button" disabled={planBusy} onClick={() => runPlanner()}>
                 {planBusy ? "编排中…" : "运行两阶段"}
               </button>
               <button
@@ -657,7 +750,7 @@ export default function LabPage() {
                 ))}
               </div>
             )}
-            <pre className={styles.out}>{planOut || "运行后展示 Research / Planner / Contract JSON…"}</pre>
+            <JsonPanel text={planOut} empty="运行后展示 Research / Planner / Contract JSON…" />
           </section>
 
           <section id="form" className={`${styles.card} ${styles.wide}`}>
@@ -679,7 +772,7 @@ export default function LabPage() {
               placeholder="用户话术"
             />
             <div className={styles.actions}>
-              <button className={styles.primary} type="button" disabled={formBusy} onClick={runFormAgent}>
+              <button className={styles.primary} type="button" disabled={formBusy} onClick={() => runFormAgent()}>
                 {formBusy ? "执行中…" : "跑一轮"}
               </button>
               <button
@@ -704,7 +797,7 @@ export default function LabPage() {
                 ))}
               </div>
             )}
-            <pre className={styles.out}>{formOut || "槽位 / 工具 trace 将显示在这里…"}</pre>
+            <JsonPanel text={formOut} empty="槽位 / 工具 trace 将显示在这里…" />
           </section>
         </div>
 
