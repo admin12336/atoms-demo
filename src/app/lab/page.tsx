@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LAB_DOCS } from "@/lib/lab/docs";
 import styles from "./page.module.css";
 
 type RagHit = {
@@ -26,7 +27,9 @@ export default function LabPage() {
   const [ragAnswer, setRagAnswer] = useState("");
   const [ragHits, setRagHits] = useState<RagHit[]>([]);
   const [ragBusy, setRagBusy] = useState(false);
-  const [corpus, setCorpus] = useState<{ id: string; title: string; role: string }[]>([]);
+  const [corpus, setCorpus] = useState(() =>
+    LAB_DOCS.map((d) => ({ id: d.id, title: d.title, role: d.role })),
+  );
 
   // Planner
   const [goal, setGoal] = useState("上海三日亲子游");

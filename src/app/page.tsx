@@ -57,7 +57,7 @@ export default function HomePage() {
           Atoms <span>Demo</span>
         </div>
         <div className={styles.navActions}>
-          <Link className={styles.btnGhost} href="/lab">
+          <Link className={styles.btnGhost} href="/grkj">
             能力实验室
           </Link>
           <Link className={styles.btnGhost} href="/login">
