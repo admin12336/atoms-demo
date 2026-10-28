@@ -216,14 +216,16 @@ export default function LabPage() {
     }
   }
 
-  async function runBot() {
+  async function runBot(message?: string) {
+    const msg = (message ?? botMsg).trim();
+    if (message) setBotMsg(message);
     setBotBusy(true);
     setBotOut("");
     try {
       const res = await fetch("/api/lab/bot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: botMsg }),
+        body: JSON.stringify({ message: msg }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "请求失败");
@@ -489,10 +491,10 @@ export default function LabPage() {
               <button className={styles.primary} type="button" disabled={botBusy} onClick={runBot}>
                 {botBusy ? "思考中…" : "发送"}
               </button>
-              <button type="button" onClick={() => setBotMsg("上海三日游")}>
+              <button type="button" disabled={botBusy} onClick={() => runBot("上海三日游")}>
                 行程
               </button>
-              <button type="button" onClick={() => setBotMsg("档案审批进度")}>
+              <button type="button" disabled={botBusy} onClick={() => runBot("档案审批进度")}>
                 审批
               </button>
             </div>
