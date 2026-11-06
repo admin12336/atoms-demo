@@ -24,9 +24,10 @@
 | 填表 Agent | 槽位 + lookupCompany mock | `POST /api/lab/form-agent` |
 | Java 契约 | Spring Result 风格 code/message/data/requestId；驾驶舱指标 | `POST /api/lab/java` |
 | 业务机器人 | 行程 / RAG / 填表 / 审批 意图路由 | `POST /api/lab/bot` |
+| 医疗科普机器人 | LangGraph 步骤、LiteLLM、pgvector+Milvus、Redis Memory、Playwright、合规拦截 | `POST /api/lab/medical` |
 | 工坊 Agent | build/iterate SSE + Abort + 限流 | `POST /api/projects/[id]/agent` |
 
-对应简历：TripPal、私域知识库、表单 Agent、园区驾驶舱、档案审批；覆盖 Java / 前端 / 后端 / 机器人 / AI。
+对应简历：医疗科普机器人、TripPal、私域知识库、表单 Agent、园区驾驶舱、档案审批；覆盖 Java / Python·FastAPI / 前端 / 后端 / 机器人 / AI。
 
 ## 3 分钟面试话术（打开 `/grkj`）
 

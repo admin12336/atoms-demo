@@ -32,6 +32,7 @@ type FormSlots = Record<string, string>;
 
 const MAP = [
   { href: "#bot", title: "业务机器人", desc: "一路由：行程 / RAG / 填表 / 审批" },
+  { href: "#medical", title: "医疗科普机器人", desc: "LangGraph · LiteLLM · Milvus · 合规拦截" },
   { href: "#java", title: "Java 后端契约", desc: "Result 风格 + 驾驶舱指标 + Health" },
   { href: "#sse", title: "前端 · 后端 SSE", desc: "POST Body 流式 + Abort + requestId" },
   { href: "#rag", title: "AI 知识库 RAG", desc: "BM25 召回、引用、空结果不编造" },
@@ -90,6 +91,15 @@ export default function LabPage() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [smokeBusy, setSmokeBusy] = useState(false);
   const [smokeMsg, setSmokeMsg] = useState("建议面试先点「一键跑通」，再按模块深潜讲解。");
+
+  // 医疗科普机器人
+  const [medMsg, setMedMsg] = useState("高血压饮食科普");
+  const [medBusy, setMedBusy] = useState(false);
+  const [medDone, setMedDone] = useState(false);
+  const [medOut, setMedOut] = useState("");
+  const [medReply, setMedReply] = useState("");
+  const [medSteps, setMedSteps] = useState<Array<{ role: string; text: string }>>([]);
+  const [medTags, setMedTags] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/lab/rag")
@@ -348,23 +358,77 @@ export default function LabPage() {
     }
   }
 
+  async function runMedical(action: "chat" | "crawl" | "models" | "health", message?: string) {
+    const msg = message ?? medMsg;
+    if (message) setMedMsg(message);
+    setMedBusy(true);
+    if (action === "chat") {
+      setMedReply("");
+      setMedSteps([]);
+      setMedTags([]);
+    }
+    setMedOut("");
+    try {
+      const res = await fetch("/api/lab/medical", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action,
+          message: msg,
+          sessionId: "lab-demo",
+          model: "qwen-private",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok && data.code !== 0) throw new Error(data.message || data.error || "请求失败");
+      const payload = data.data ?? data;
+      setMedOut(JSON.stringify(data, null, 2));
+      if (action === "chat") {
+        setMedReply(payload.reply || "");
+        setMedSteps(payload.steps || []);
+        setMedTags(
+          [
+            payload.intent,
+            payload.model,
+            payload.litellmRouted ? "LiteLLM" : "",
+            payload.redisMemory ? "Redis Memory" : "",
+            payload.vector ? "pgvector+Milvus" : "",
+          ].filter(Boolean),
+        );
+      }
+      setMedDone(true);
+      return true;
+    } catch (e) {
+      setMedOut(`错误：${(e as Error).message}`);
+      setMedReply(`错误：${(e as Error).message}`);
+      return false;
+    } finally {
+      setMedBusy(false);
+    }
+  }
+
   async function runSmokeDemo() {
     if (smokeBusy) return;
     setSmokeBusy(true);
     setBotChat([]);
     try {
-      setSmokeMsg("1/6 机器人四意图…");
+      setSmokeMsg("1/7 机器人四意图…");
       for (const msg of ["上海三日游", "故障码 E42", "查询公司 grkj", "档案审批进度"]) {
         await runBot(msg);
       }
-      setSmokeMsg("2/6 Java 驾驶舱 + Health…");
+      setSmokeMsg("2/7 医疗科普：问答 + 合规拦截 + Playwright…");
+      document.getElementById("medical")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      await runMedical("chat", "高血压饮食科普");
+      await runMedical("chat", "我是不是得了糖尿病要开药吗");
+      await runMedical("crawl");
+      setSmokeMsg("3/7 Java 驾驶舱 + Health…");
       document.getElementById("java")?.scrollIntoView({ behavior: "smooth", block: "start" });
       await runJava("park_metrics");
       await runJava("health");
-      setSmokeMsg("3/6 RAG 空结果兜底…");
+      setSmokeMsg("4/7 RAG 空结果兜底…");
       document.getElementById("rag")?.scrollIntoView({ behavior: "smooth", block: "start" });
       await runRag("火星发动机说明书");
-      setSmokeMsg("4/6 Planner 软超时降级…");
+      setSmokeMsg("5/7 Planner 软超时降级…");
       document.getElementById("planner")?.scrollIntoView({ behavior: "smooth", block: "start" });
       await runPlanner({
         goal: "上海三日亲子游",
@@ -373,13 +437,13 @@ export default function LabPage() {
         softTimeoutMs: 1000,
         injectGeoJump: false,
       });
-      setSmokeMsg("5/6 填表 Agent grkj…");
+      setSmokeMsg("6/7 填表 Agent grkj…");
       document.getElementById("form")?.scrollIntoView({ behavior: "smooth", block: "start" });
       await runFormAgent("查询公司 grkj");
-      setSmokeMsg("6/6 SSE 短流演示…");
+      setSmokeMsg("7/7 SSE 短流演示…");
       document.getElementById("sse")?.scrollIntoView({ behavior: "smooth", block: "start" });
       await runSse();
-      setSmokeMsg("一键跑通完成。可回顶部按模块讲解；原始 JSON 默认折叠，点「展开」查看。");
+      setSmokeMsg("一键跑通完成。含医疗科普 LangGraph/LiteLLM/Milvus/Playwright 演示。");
       document.getElementById("bot")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (e) {
       setSmokeMsg(`一键跑通中断：${(e as Error).message}`);
@@ -415,15 +479,15 @@ export default function LabPage() {
             契约与驾驶舱，再 SSE / RAG / 两阶段 / 填表深潜。无 Key 可完整体验。
           </p>
           <p className={styles.note}>
-            口径说明：本 Demo 宿主为 Next.js；Java 模块演示 Spring Boot 统一返回体（code / message / data /
-            requestId）与驾驶舱指标约定，便于前后端联调答辩，不是独立 JVM 进程。
+            口径说明：宿主为 Next.js。Java 演示 Spring Result 契约；医疗模块演示 FastAPI / LangChain /
+            LangGraph / LiteLLM / pgvector+Milvus / Redis / Playwright 等简历技术点（可答辩逻辑，非独立集群）。
           </p>
           <div className={styles.tags}>
             <span className={styles.tag}>Java 契约</span>
-            <span className={styles.tag}>前端 · React</span>
-            <span className={styles.tag}>后端 · API</span>
-            <span className={styles.tag}>业务机器人</span>
-            <span className={styles.tag}>AI · SSE/RAG/Agent</span>
+            <span className={styles.tag}>FastAPI · Python</span>
+            <span className={styles.tag}>LangGraph / LiteLLM</span>
+            <span className={styles.tag}>pgvector · Milvus</span>
+            <span className={styles.tag}>SSE · RAG · Agent</span>
           </div>
         </section>
 
@@ -436,6 +500,7 @@ export default function LabPage() {
         <div className={styles.checkList} aria-label="模块完成状态">
           {[
             ["机器人", botDone],
+            ["医疗科普", medDone],
             ["Java", javaDone],
             ["SSE", sseDone],
             ["RAG", ragDone],
@@ -539,10 +604,85 @@ export default function LabPage() {
             </div>
           </section>
 
+          <section id="medical" className={`${styles.card} ${styles.wide}`}>
+            <div className={styles.cardHead}>
+              <h2>
+                2. 医疗科普对话咨询机器人
+                <span className={styles.badge}>LangGraph · LiteLLM · RAG</span>
+              </h2>
+              <span className={`${styles.statusDot} ${medDone ? styles.on : ""}`} />
+            </div>
+            <p className={styles.meta}>
+              FastAPI 风格契约 · LangChain/LangGraph 多轮 Agent · Function Calling · LiteLLM 多模型路由 ·
+              pgvector + Milvus 双库 · Redis Memory · Playwright 增量 · 合规拦截（禁诊断开药）
+            </p>
+            <div className={styles.resumeTag}>简历映射：医疗科普对话咨询机器人【主导】</div>
+            <div className={styles.actions}>
+              <button type="button" disabled={medBusy} onClick={() => runMedical("chat", "高血压饮食科普")}>
+                高血压科普
+              </button>
+              <button type="button" disabled={medBusy} onClick={() => runMedical("chat", "门诊怎么走")}>
+                导诊引导
+              </button>
+              <button type="button" disabled={medBusy} onClick={() => runMedical("chat", "我是不是得了糖尿病要开药吗")}>
+                试：合规拦截
+              </button>
+              <button type="button" disabled={medBusy} onClick={() => runMedical("crawl")}>
+                Playwright 增量
+              </button>
+              <button type="button" disabled={medBusy} onClick={() => runMedical("models")}>
+                LiteLLM 路由
+              </button>
+              <button type="button" disabled={medBusy} onClick={() => runMedical("health")}>
+                Health
+              </button>
+            </div>
+            <div className={styles.row} style={{ marginTop: 10 }}>
+              <input
+                className={styles.field}
+                value={medMsg}
+                onChange={(e) => setMedMsg(e.target.value)}
+                placeholder="科普 / 导诊问题"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") runMedical("chat");
+                }}
+              />
+            </div>
+            <div className={styles.actions}>
+              <button className={styles.primary} type="button" disabled={medBusy} onClick={() => runMedical("chat")}>
+                {medBusy ? "推理中…" : "发送科普问答"}
+              </button>
+            </div>
+            {medTags.length > 0 && (
+              <div className={styles.summary}>
+                {medTags.map((t) => (
+                  <span key={t} className={styles.summaryItem}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+            {medReply && (
+              <div className={`${styles.bubble} ${styles.bubbleBot}`} style={{ marginTop: 12, maxWidth: "100%" }}>
+                {medReply}
+              </div>
+            )}
+            {medSteps.length > 0 && (
+              <ol className={styles.steps}>
+                {medSteps.map((s, idx) => (
+                  <li key={`${s.role}-${idx}`}>
+                    [{s.role}] {s.text}
+                  </li>
+                ))}
+              </ol>
+            )}
+            <JsonPanel text={medOut} empty="发送后展示 FastAPI 风格 JSON（含双库检索与编排步骤）…" />
+          </section>
+
           <section id="java" className={styles.card}>
             <div className={styles.cardHead}>
               <h2>
-                2. Java 风格后端契约
+                3. Java 风格后端契约
                 <span className={styles.badge}>Java · 后端</span>
               </h2>
               <span className={`${styles.statusDot} ${javaDone ? styles.on : ""}`} />
@@ -587,7 +727,7 @@ export default function LabPage() {
           <section id="sse" className={styles.card}>
             <div className={styles.cardHead}>
               <h2>
-                3. SSE 流式（POST）
+                4. SSE 流式（POST）
                 <span className={styles.badge}>前端 + 后端</span>
               </h2>
               <span className={`${styles.statusDot} ${sseDone ? styles.on : ""}`} />
@@ -616,7 +756,7 @@ export default function LabPage() {
           <section id="rag" className={styles.card}>
             <div className={styles.cardHead}>
               <h2>
-                4. 迷你知识库 RAG
+                5. 迷你知识库 RAG
                 <span className={styles.badge}>AI · 检索</span>
               </h2>
               <span className={`${styles.statusDot} ${ragDone ? styles.on : ""}`} />
@@ -653,7 +793,7 @@ export default function LabPage() {
           <section id="planner" className={`${styles.card} ${styles.wide}`}>
             <div className={styles.cardHead}>
               <h2>
-                5. Research→Planner · Mock / 软超时分离
+                6. Research→Planner · Mock / 软超时分离
                 <span className={styles.badge}>AI · Agent</span>
               </h2>
               <span className={`${styles.statusDot} ${planDone ? styles.on : ""}`} />
@@ -756,7 +896,7 @@ export default function LabPage() {
           <section id="form" className={`${styles.card} ${styles.wide}`}>
             <div className={styles.cardHead}>
               <h2>
-                6. 槽位 + 工具填表 Agent
+                7. 槽位 + 工具填表 Agent
                 <span className={styles.badge}>AI · 业务 Agent</span>
               </h2>
               <span className={`${styles.statusDot} ${formDone ? styles.on : ""}`} />

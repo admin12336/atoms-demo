@@ -2,7 +2,7 @@
 export type LabDoc = {
   id: string;
   title: string;
-  role: "维保" | "故障码" | "安全" | "工程" | "行程" | "审批";
+  role: "维保" | "故障码" | "安全" | "工程" | "行程" | "审批" | "医疗科普";
   text: string;
 };
 
@@ -60,5 +60,11 @@ export const LAB_DOCS: LabDoc[] = [
     title: "Java Spring Boot 接口约定",
     role: "工程",
     text: "业务接口统一返回 code/message/data/requestId。鉴权使用 JWT；热点指标可 Redis 缓存；大屏统计走预聚合避免扫明细。前后端按契约联调，异常码与日志可定位。",
+  },
+  {
+    id: "doc-med-stack",
+    title: "医疗科普机器人技术栈说明",
+    role: "医疗科普",
+    text: "医疗科普对话机器人使用 FastAPI + LangChain/LangGraph 编排，LiteLLM 统一私有化多模型，PostgreSQL-pgvector 与 Milvus 双向量库检索，Redis 会话 Memory，SSE 流式输出，Function Calling 调知识库工具，Playwright 采集宣教资料增量。仅科普不诊疗。",
   },
 ];

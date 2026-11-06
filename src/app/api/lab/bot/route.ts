@@ -71,6 +71,19 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (/科普|宣教|导诊|血压|高血压|糖尿|术后|开药|诊断|就医|门诊怎么走/.test(msg)) {
+      steps.push({ role: "route", text: "转到医疗科普模块 /api/lab/medical（LangGraph + LiteLLM + 双向量库）" });
+      return ok(started, {
+        requestId,
+        intent: "medical_hint",
+        resumeProject: "医疗科普对话咨询机器人",
+        steps,
+        suggestions: ["高血压饮食科普", "门诊怎么走", "我是不是得了糖尿病要开药吗"],
+        reply:
+          "医疗科普能力在「医疗科普机器人」模块：LangChain/LangGraph、LiteLLM、pgvector+Milvus、Redis Memory、Playwright 增量、合规拦截。请点页面该模块建议话术体验（本综合机器人仅做意图分流提示）。",
+      });
+    }
+
     if (/公司|查询|填表|信用|grkj/.test(msg) || lower.includes("grkj")) {
       steps.push({ role: "tool", text: "调用 lookupCompany（槽位 + 工具）" });
       const name = lower.includes("grkj") || msg.includes("国锐") ? "grkj" : "深度赋智";
@@ -122,7 +135,7 @@ export async function POST(req: NextRequest) {
       steps,
       suggestions,
       reply:
-        "我是简历能力演示机器人。可试：①「上海三日游」→ TripPal；②「故障码 E42」→ 知识库 RAG；③「查询公司 grkj」→ 填表 Agent；④「档案审批进度」→ 审批后台。也可点下方 Java / SSE / Planner 模块深潜。",
+        "我是简历能力演示机器人。可试：①「上海三日游」→ TripPal；②「故障码 E42」→ RAG；③「查询公司 grkj」→ 填表；④「档案审批」；⑤「高血压科普」→ 医疗科普模块（LangGraph/LiteLLM/Milvus）。也可点 Java / SSE / Planner。",
     });
   } catch (e) {
     return NextResponse.json(
